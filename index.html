@@ -1,0 +1,61 @@
+<html>
+  <head>
+<style>
+</style>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.0.0/react-router-dom.js'></script>
+  </head>
+  <body>
+    <div id='root'></div>
+    <script type='text/babel'>
+      class App extends React.Component{
+        constructor(){
+          super();
+          this.state = {
+            users: [],
+            name: ''
+          };
+          this.onChange = this.onChange.bind(this);
+          this.create = this.create.bind(this);
+        }
+        async create(ev){
+          ev.preventDefault();
+          const response = await axios.post('/api/users', {name: this.state.name })
+          this.setState({ users: [...this.state.users, response.data ], name: ''});
+        }
+        onChange(ev){
+          this.setState({[ev.target.name]: ev.target.value });
+        }
+        async componentDidMount(){
+          const response = await axios.get('/api/users');
+          this.setState({
+            users: response.data
+          });
+        }
+        render(){
+          const { users, name } = this.state;
+          const { onChange, create } = this;
+          return (
+            <div>
+              <h1>Profs SPA App</h1>
+              <ul>
+                {
+                  users.map( user => <li key={ user.id }>{ user.name }</li>)
+                }
+              </ul>
+              <form onSubmit={ create }>
+                <input name='name' value={ name } onChange={ onChange }/>
+                <button disabled={ !name }>Create User</button>
+              </form>
+            </div>
+          );
+        }
+      }
+      const root = document.querySelector('#root');
+      ReactDOM.render(<App />, root);
+    </script>
+  </body>
+</html>

@@ -29,8 +29,10 @@ syncAndSeed();
 
 const express = require('express');
 const app = express();
+const path = require('path');
 
 app.use(express.urlencoded());
+app.use(express.json());
 
 const port = process.env.PORT || 3000;
 
@@ -45,6 +47,8 @@ app.post('/', async(req, res, next)=> {
 });
 
 app.get('/', async(req, res, next)=> {
+  res.sendFile(path.join(__dirname, 'index.html'));
+  /*
   try {
     const response = await client.query('SELECT * from users'); 
     const users = response.rows;
@@ -65,6 +69,29 @@ app.get('/', async(req, res, next)=> {
         </body>
       </html>
     `);
+  }
+  catch(ex){
+    next(ex);
+  }
+  */
+});
+
+app.post('/api/users', async (req, res, next)=> {
+  try{
+    await client.query('INSERT into users(name) values($1)', [req.body.name]);
+    const response = await client.query('SELECT * FROM users WHERE name=$1', [req.body.name]);
+    res.send(response.rows[0]);
+  }
+  catch(ex){
+    next(ex);
+  }
+});
+
+app.get('/api/users', async(req, res, next)=> {
+  try {
+    const response = await client.query('SELECT * from users'); 
+    const users = response.rows;
+    res.send(users);
   }
   catch(ex){
     next(ex);
